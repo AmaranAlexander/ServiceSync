@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}{{ mechanic.full_name }} — Workload{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb">
+    {% if not current_user.is_mechanic %}
+    <li class="breadcrumb-item"><a href="{{ url_for('mechanics.workload') }}">Workload</a></li>
+    {% endif %}
+    <li class="breadcrumb-item active">{{ mechanic.full_name }}</li>
+  </ol>
+</nav>
+
+<div class="d-flex align-items-center gap-3 mb-4">
+  <h2 class="fw-bold mb-0">{{ mechanic.full_name }}</h2>
+  <span class="badge bg-success fs-6">{{ metrics.active_count }} Active</span>
+  <span class="badge bg-info fs-6">{{ metrics.completed_today }} Done Today</span>
+</div>
+
+{% if metrics.active_jobs %}
+<div class="row g-3">
+  {% for ticket in metrics.active_jobs %}
+  <div class="col-md-6 col-xl-4">
+    <div class="card border-0 shadow-sm
+      {% if ticket.urgency == 'critical' %}border-start border-danger border-4
+      {% elif ticket.urgency == 'high' %}border-start border-warning border-4{% endif %}">
+      <div class="card-body">
+        <div class="d-flex justify-content-between mb-2">
+          <span class="fw-bold">#{{ ticket.ticket_number }}</span>
+          <span class="badge {{ ticket.status_badge_class }}">{{ ticket.status_label }}</span>
+        </div>
+        <div class="fw-semibold">{{ ticket.customer.full_name if ticket.customer else '—' }}</div>
+        <div class="small text-muted mb-1">{{ ticket.vehicle.display_name if ticket.vehicle else '—' }}</div>
+        <div class="small mb-2">{{ ticket.service_type_label }}</div>
+        {% if ticket.urgency in ['critical','high'] %}
+          <span class="badge {% if ticket.urgency == 'critical' %}bg-danger{% else %}bg-warning text-dark{% endif %} mb-2">
+            {{ ticket.urgency_label }}
+          </span>
+        {% endif %}
+        <p class="small text-muted mb-3">{{ ticket.description[:100] }}{% if ticket.description|length > 100 %}…{% endif %}</p>
+        <a href="{{ url_for('tickets.ticket_detail', ticket_id=ticket.id) }}" class="btn btn-sm btn-outline-dark w-100">View Ticket</a>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+  <div class="text-center py-5 text-muted">
+    <i class="bi bi-check2-circle display-3 d-block mb-2"></i>
+    <h4>No active jobs.</h4>
+  </div>
+{% endif %}
+{% endblock %}

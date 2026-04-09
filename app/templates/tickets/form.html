@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}{% if ticket %}Edit Ticket #{{ ticket.ticket_number }}{% else %}New Service Ticket{% endif %}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-9">
+    <nav aria-label="breadcrumb" class="mb-3">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('tickets.list_tickets') }}">Tickets</a></li>
+        <li class="breadcrumb-item active">{{ 'Edit #' + ticket.ticket_number if ticket else 'New Ticket' }}</li>
+      </ol>
+    </nav>
+
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-dark text-white fw-semibold">
+        <i class="bi bi-clipboard2-plus me-1"></i>
+        {{ 'Edit Ticket #' + ticket.ticket_number if ticket else 'New Service Ticket' }}
+      </div>
+      <div class="card-body p-4">
+        <form method="POST" novalidate>
+          {{ form.hidden_tag() }}
+
+          <div class="row g-3">
+            <div class="col-md-12">
+              {{ form.vehicle_id.label(class="form-label fw-semibold") }}
+              {{ form.vehicle_id(class="form-select" + (" is-invalid" if form.vehicle_id.errors else "")) }}
+              {% for e in form.vehicle_id.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+              <div class="form-text">
+                Customer not listed? <a href="{{ url_for('customers.create_customer') }}">Add new customer →</a>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              {{ form.service_type.label(class="form-label fw-semibold") }}
+              {{ form.service_type(class="form-select" + (" is-invalid" if form.service_type.errors else "")) }}
+              {% for e in form.service_type.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+            </div>
+
+            <div class="col-md-6">
+              {{ form.urgency.label(class="form-label fw-semibold") }}
+              {{ form.urgency(class="form-select" + (" is-invalid" if form.urgency.errors else "")) }}
+              {% for e in form.urgency.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+            </div>
+
+            <div class="col-12">
+              {{ form.description.label(class="form-label fw-semibold") }}
+              {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else "")) }}
+              {% for e in form.description.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+            </div>
+
+            <div class="col-12">
+              {{ form.customer_complaint.label(class="form-label fw-semibold") }}
+              {{ form.customer_complaint(class="form-control" + (" is-invalid" if form.customer_complaint.errors else "")) }}
+            </div>
+
+            <div class="col-md-4">
+              {{ form.assigned_mechanic_id.label(class="form-label fw-semibold") }}
+              {{ form.assigned_mechanic_id(class="form-select") }}
+            </div>
+
+            <div class="col-md-4">
+              {{ form.mileage_in.label(class="form-label fw-semibold") }}
+              {{ form.mileage_in(class="form-control" + (" is-invalid" if form.mileage_in.errors else "")) }}
+              {% for e in form.mileage_in.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+            </div>
+
+            <div class="col-md-4">
+              {{ form.estimated_hours.label(class="form-label fw-semibold") }}
+              {{ form.estimated_hours(class="form-control" + (" is-invalid" if form.estimated_hours.errors else "")) }}
+              {% for e in form.estimated_hours.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+            </div>
+
+            <div class="col-md-6">
+              {{ form.promised_time.label(class="form-label fw-semibold") }}
+              {{ form.promised_time(class="form-control" + (" is-invalid" if form.promised_time.errors else "")) }}
+            </div>
+          </div>
+
+          <hr class="my-4">
+          <div class="d-flex gap-2">
+            {{ form.submit(class="btn btn-dark px-4") }}
+            <a href="{{ url_for('tickets.list_tickets') }}" class="btn btn-outline-secondary">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

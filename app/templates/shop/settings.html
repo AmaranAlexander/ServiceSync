@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}Shop Settings{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2 class="fw-bold mb-0"><i class="bi bi-shop me-2"></i>{{ shop.name }}</h2>
+</div>
+
+<div class="row g-4">
+  <!-- Join Code Card -->
+  <div class="col-lg-5">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-dark text-white fw-semibold">
+        <i class="bi bi-key me-1"></i> Team Join Code
+      </div>
+      <div class="card-body text-center py-4">
+        <p class="text-muted mb-2">Share this code with new staff so they can sign up and join your shop.</p>
+        <div class="display-5 fw-bold font-monospace letter-spacing-wide text-dark my-3 user-select-all">
+          {{ shop.join_code }}
+        </div>
+        <button class="btn btn-outline-dark btn-sm" onclick="copyCode()">
+          <i class="bi bi-clipboard me-1"></i> Copy Code
+        </button>
+        <p class="text-muted small mt-3 mb-0">
+          New users go to <strong>Sign Up</strong> and choose "Join an existing shop".
+        </p>
+      </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mt-4">
+      <div class="card-body">
+        <dl class="mb-0">
+          <dt class="text-muted small">Shop Name</dt>
+          <dd class="fw-semibold">{{ shop.name }}</dd>
+          <dt class="text-muted small">Members</dt>
+          <dd>{{ members|length }}</dd>
+          <dt class="text-muted small">Created</dt>
+          <dd class="text-muted small">{{ shop.created_at.strftime('%B %d, %Y') }}</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <!-- Team Members -->
+  <div class="col-lg-7">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white fw-semibold">
+        <i class="bi bi-people me-1"></i> Team Members ({{ members|length }})
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Name</th>
+              <th>Username</th>
+              <th>Role</th>
+              {% if current_user.is_manager %}<th>Change Role</th>{% endif %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for member in members %}
+            <tr>
+              <td class="fw-semibold">
+                {{ member.full_name }}
+                {% if member.id == current_user.id %}
+                  <span class="badge bg-secondary ms-1">You</span>
+                {% endif %}
+              </td>
+              <td class="text-muted small">{{ member.username }}</td>
+              <td>
+                <span class="badge
+                  {% if member.is_manager %}bg-danger
+                  {% elif member.is_mechanic %}bg-success
+                  {% else %}bg-primary{% endif %}">
+                  {{ member.role_label }}
+                </span>
+              </td>
+              {% if current_user.is_manager %}
+              <td>
+                {% if member.id != current_user.id %}
+                <form method="POST" action="{{ url_for('shop.update_member_role', user_id=member.id) }}" class="d-flex gap-1">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <select name="role" class="form-select form-select-sm" style="width:auto">
+                    {% for role_val, role_label in [('front_desk','Front Desk'),('mechanic','Mechanic'),('manager','Manager')] %}
+                    <option value="{{ role_val }}" {% if member.role == role_val %}selected{% endif %}>{{ role_label }}</option>
+                    {% endfor %}
+                  </select>
+                  <button type="submit" class="btn btn-sm btn-outline-dark py-0">Save</button>
+                </form>
+                {% else %}
+                  <span class="text-muted small">—</span>
+                {% endif %}
+              </td>
+              {% endif %}
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function copyCode() {
+  navigator.clipboard.writeText("{{ shop.join_code }}").then(() => {
+    const btn = event.target.closest("button");
+    btn.innerHTML = '<i class="bi bi-check-lg me-1"></i> Copied!';
+    setTimeout(() => { btn.innerHTML = '<i class="bi bi-clipboard me-1"></i> Copy Code'; }, 2000);
+  });
+}
+</script>
+{% endblock %}

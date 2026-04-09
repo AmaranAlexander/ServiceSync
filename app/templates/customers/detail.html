@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block title %}{{ customer.full_name }}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ url_for('customers.list_customers') }}">Customers</a></li>
+    <li class="breadcrumb-item active">{{ customer.full_name }}</li>
+  </ol>
+</nav>
+
+<div class="row g-4">
+  <!-- Customer Info -->
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-dark text-white fw-semibold d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-person me-1"></i> {{ customer.full_name }}</span>
+        <a href="{{ url_for('customers.edit_customer', customer_id=customer.id) }}" class="btn btn-sm btn-outline-light py-0">Edit</a>
+      </div>
+      <div class="card-body">
+        <dl class="mb-0">
+          <dt class="text-muted small">Phone</dt>
+          <dd class="fw-semibold">{{ customer.phone }}</dd>
+
+          {% if customer.email %}
+          <dt class="text-muted small">Email</dt>
+          <dd>{{ customer.email }}</dd>
+          {% endif %}
+
+          {% if customer.address %}
+          <dt class="text-muted small">Address</dt>
+          <dd>{{ customer.address }}</dd>
+          {% endif %}
+
+          {% if customer.notes %}
+          <dt class="text-muted small">Staff Notes</dt>
+          <dd class="alert alert-warning py-1 px-2 small mb-0">{{ customer.notes }}</dd>
+          {% endif %}
+        </dl>
+        <hr>
+        <div class="d-grid">
+          <a href="{{ url_for('tickets.create_ticket') }}" class="btn btn-dark btn-sm">
+            <i class="bi bi-plus me-1"></i> New Ticket for This Customer
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vehicles -->
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-white fw-semibold d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-car-front me-1"></i> Vehicles ({{ vehicles|length }})</span>
+        <a href="{{ url_for('customers.add_vehicle', customer_id=customer.id) }}" class="btn btn-sm btn-dark py-0">+ Add Vehicle</a>
+      </div>
+      {% if vehicles %}
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Vehicle</th>
+              <th>Plate</th>
+              <th>VIN</th>
+              <th>Mileage</th>
+              <th>Active Ticket</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for vehicle in vehicles %}
+            <tr>
+              <td class="fw-semibold">{{ vehicle.display_name }}
+                {% if vehicle.color %}<span class="text-muted small">· {{ vehicle.color }}</span>{% endif %}
+              </td>
+              <td>{{ vehicle.license_plate or '—' }}</td>
+              <td class="small text-muted">{{ vehicle.vin or '—' }}</td>
+              <td class="small">
+                {% if vehicle.mileage_in %}{{ "{:,}".format(vehicle.mileage_in) }} mi{% else %}—{% endif %}
+              </td>
+              <td>
+                {% set active = vehicle.active_ticket %}
+                {% if active %}
+                  <a href="{{ url_for('tickets.ticket_detail', ticket_id=active.id) }}" class="badge {{ active.status_badge_class }} text-decoration-none">
+                    #{{ active.ticket_number }}
+                  </a>
+                {% else %}
+                  <span class="text-muted small">None</span>
+                {% endif %}
+              </td>
+              <td>
+                <a href="{{ url_for('customers.edit_vehicle', customer_id=customer.id, vehicle_id=vehicle.id) }}"
+                   class="btn btn-sm btn-outline-secondary py-0">Edit</a>
+                <a href="{{ url_for('tickets.create_ticket') }}?vehicle_id={{ vehicle.id }}"
+                   class="btn btn-sm btn-outline-dark py-0">+ Ticket</a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="card-body text-center text-muted">No vehicles on file.
+        <a href="{{ url_for('customers.add_vehicle', customer_id=customer.id) }}">Add one →</a>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Service History -->
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white fw-semibold"><i class="bi bi-clock-history me-1"></i> Service History</div>
+      {% set all_tickets = customer.all_tickets %}
+      {% if all_tickets %}
+      <div class="table-responsive">
+        <table class="table table-sm table-hover mb-0">
+          <thead class="table-light">
+            <tr><th>Ticket</th><th>Vehicle</th><th>Service</th><th>Status</th><th>Date</th><th></th></tr>
+          </thead>
+          <tbody>
+            {% for t in all_tickets | sort(attribute='created_at', reverse=True) %}
+            <tr>
+              <td class="fw-semibold small">#{{ t.ticket_number }}</td>
+              <td class="small">{{ t.vehicle.display_name }}</td>
+              <td class="small">{{ t.service_type_label }}</td>
+              <td><span class="badge {{ t.status_badge_class }}">{{ t.status_label }}</span></td>
+              <td class="small text-muted">{{ t.created_at.strftime('%b %d, %Y') }}</td>
+              <td><a href="{{ url_for('tickets.ticket_detail', ticket_id=t.id) }}" class="btn btn-sm btn-outline-dark py-0">Open</a></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="card-body text-muted small">No service history yet.</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

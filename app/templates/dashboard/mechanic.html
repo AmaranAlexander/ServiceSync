@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}My Jobs{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2 class="fw-bold mb-0"><i class="bi bi-wrench-adjustable me-2"></i>My Jobs</h2>
+  <span class="badge bg-success fs-6">{{ metrics.active_count }} Active · {{ metrics.completed_today }} Done Today</span>
+</div>
+
+{% if metrics.active_jobs %}
+<div class="row g-3">
+  {% for ticket in metrics.active_jobs %}
+  <div class="col-md-6 col-xl-4">
+    <div class="card border-0 shadow-sm h-100
+      {% if ticket.urgency == 'critical' %}border-start border-danger border-4
+      {% elif ticket.urgency == 'high' %}border-start border-warning border-4{% endif %}">
+      <div class="card-body">
+        <div class="d-flex justify-content-between mb-2">
+          <span class="fw-bold text-dark">#{{ ticket.ticket_number }}</span>
+          <span class="badge {{ ticket.status_badge_class }}">{{ ticket.status_label }}</span>
+        </div>
+        {% if ticket.urgency in ['critical','high'] %}
+          <div class="mb-2">
+            <span class="badge {% if ticket.urgency == 'critical' %}bg-danger{% else %}bg-warning text-dark{% endif %}">
+              {{ ticket.urgency_label }}
+            </span>
+          </div>
+        {% endif %}
+        <div class="fw-semibold">{{ ticket.customer.full_name if ticket.customer else '—' }}</div>
+        <div class="text-muted small mb-2">
+          {{ ticket.vehicle.display_name if ticket.vehicle else '—' }}
+          {% if ticket.vehicle and ticket.vehicle.license_plate %}· {{ ticket.vehicle.license_plate }}{% endif %}
+        </div>
+        <div class="small mb-3">
+          <span class="badge bg-light text-dark border">{{ ticket.service_type_label }}</span>
+        </div>
+        <p class="small text-muted mb-3">{{ ticket.description[:120] }}{% if ticket.description|length > 120 %}…{% endif %}</p>
+        <a href="{{ url_for('tickets.ticket_detail', ticket_id=ticket.id) }}" class="btn btn-dark btn-sm w-100">
+          Open Ticket
+        </a>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+  <div class="text-center py-5 text-muted">
+    <i class="bi bi-check2-circle display-3 d-block mb-2"></i>
+    <h4>All clear — no active jobs assigned to you.</h4>
+  </div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,103 @@
+/* ServiceSync — Internal Operations Tool */
+
+:root {
+  --st-dark: #1a1a1a;
+  --st-surface: #ffffff;
+  --st-muted: #6c757d;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 0.9rem;
+}
+
+/* ── Navbar ── */
+.navbar-brand {
+  font-size: 1.1rem;
+  letter-spacing: 0.03em;
+}
+
+/* ── Badge status colors ── */
+.badge-waiting       { background-color: #ffc107; color: #000; }
+.badge-in-progress   { background-color: #0d6efd; color: #fff; }
+.badge-on-hold       { background-color: #6c757d; color: #fff; }
+.badge-completed     { background-color: #198754; color: #fff; }
+.badge-ready         { background-color: #0dcaf0; color: #000; }
+.badge-cancelled     { background-color: #343a40; color: #fff; }
+.badge-default       { background-color: #dee2e6; color: #000; }
+
+/* ── Cards ── */
+.card {
+  border-radius: 8px;
+}
+.card-header {
+  border-radius: 8px 8px 0 0 !important;
+  font-size: 0.85rem;
+  letter-spacing: 0.02em;
+}
+
+/* ── Dashboard KPI cards ── */
+.card .display-5 {
+  line-height: 1;
+  margin-top: 4px;
+}
+.card .text-uppercase {
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+}
+
+/* ── Tables ── */
+.table th {
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.table td {
+  vertical-align: middle;
+}
+
+/* ── Forms ── */
+.form-label {
+  font-size: 0.82rem;
+  margin-bottom: 4px;
+}
+.form-control, .form-select {
+  font-size: 0.88rem;
+}
+
+/* ── Priority row highlighting ── */
+tr.table-danger td,
+tr.table-warning td {
+  font-weight: 500;
+}
+
+/* ── Breadcrumb ── */
+.breadcrumb {
+  font-size: 0.82rem;
+}
+
+/* ── Urgency border accent on cards ── */
+.border-4 {
+  border-width: 4px !important;
+}
+
+/* ── Status history table ── */
+.table-sm td, .table-sm th {
+  padding: 0.3rem 0.5rem;
+}
+
+/* ── Note thread ── */
+.border-secondary.border-start {
+  border-left-width: 3px !important;
+}
+
+/* ── Login page ── */
+.card.shadow-sm {
+  border-radius: 12px;
+}
+
+/* ── Responsive utility ── */
+@media (max-width: 768px) {
+  .display-5 { font-size: 2rem; }
+}

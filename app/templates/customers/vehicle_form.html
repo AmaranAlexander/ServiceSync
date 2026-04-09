@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}{% if vehicle %}Edit Vehicle{% else %}Add Vehicle{% endif %}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <nav aria-label="breadcrumb" class="mb-3">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('customers.list_customers') }}">Customers</a></li>
+        <li class="breadcrumb-item">
+          <a href="{{ url_for('customers.customer_detail', customer_id=customer.id) }}">{{ customer.full_name }}</a>
+        </li>
+        <li class="breadcrumb-item active">{{ 'Edit Vehicle' if vehicle else 'Add Vehicle' }}</li>
+      </ol>
+    </nav>
+
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-dark text-white fw-semibold">
+        <i class="bi bi-car-front me-1"></i>
+        {{ 'Edit Vehicle' if vehicle else 'Add Vehicle for ' + customer.full_name }}
+      </div>
+      <div class="card-body p-4">
+        <form method="POST" novalidate>
+          {{ form.hidden_tag() }}
+          <div class="row g-3">
+            <div class="col-md-4">
+              {{ form.year.label(class="form-label fw-semibold") }}
+              {{ form.year(class="form-control" + (" is-invalid" if form.year.errors else "")) }}
+              {% for e in form.year.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+            </div>
+            <div class="col-md-4">
+              {{ form.make.label(class="form-label fw-semibold") }}
+              {{ form.make(class="form-control" + (" is-invalid" if form.make.errors else "")) }}
+              {% for e in form.make.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+            </div>
+            <div class="col-md-4">
+              {{ form.model.label(class="form-label fw-semibold") }}
+              {{ form.model(class="form-control" + (" is-invalid" if form.model.errors else "")) }}
+              {% for e in form.model.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+            </div>
+            <div class="col-md-4">
+              {{ form.color.label(class="form-label fw-semibold") }}
+              {{ form.color(class="form-control") }}
+            </div>
+            <div class="col-md-4">
+              {{ form.license_plate.label(class="form-label fw-semibold") }}
+              {{ form.license_plate(class="form-control") }}
+            </div>
+            <div class="col-md-4">
+              {{ form.mileage_in.label(class="form-label fw-semibold") }}
+              {{ form.mileage_in(class="form-control") }}
+            </div>
+            <div class="col-md-6">
+              {{ form.vin.label(class="form-label fw-semibold") }}
+              {{ form.vin(class="form-control") }}
+            </div>
+            <div class="col-md-3">
+              {{ form.engine.label(class="form-label fw-semibold") }}
+              {{ form.engine(class="form-control") }}
+            </div>
+            <div class="col-md-3">
+              {{ form.transmission.label(class="form-label fw-semibold") }}
+              {{ form.transmission(class="form-select") }}
+            </div>
+          </div>
+          <hr class="my-4">
+          <div class="d-flex gap-2">
+            {{ form.submit(class="btn btn-dark px-4") }}
+            <a href="{{ url_for('customers.customer_detail', customer_id=customer.id) }}" class="btn btn-outline-secondary">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

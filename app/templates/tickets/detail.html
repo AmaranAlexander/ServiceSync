@@ -1,0 +1,224 @@
+{% extends "base.html" %}
+{% block title %}Ticket #{{ ticket.ticket_number }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-4">
+  <div>
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('tickets.list_tickets') }}">Tickets</a></li>
+        <li class="breadcrumb-item active">#{{ ticket.ticket_number }}</li>
+      </ol>
+    </nav>
+    <h2 class="fw-bold mb-0">
+      {% if ticket.urgency == 'critical' %}
+        <span class="badge bg-danger me-2">CRITICAL</span>
+      {% elif ticket.urgency == 'high' %}
+        <span class="badge bg-warning text-dark me-2">HIGH PRIORITY</span>
+      {% endif %}
+      Ticket #{{ ticket.ticket_number }}
+    </h2>
+  </div>
+  <div class="d-flex gap-2">
+    {% if not current_user.is_mechanic %}
+    <a href="{{ url_for('tickets.edit_ticket', ticket_id=ticket.id) }}" class="btn btn-outline-dark">
+      <i class="bi bi-pencil"></i> Edit
+    </a>
+    {% endif %}
+    {% if current_user.is_manager %}
+    <form method="POST" action="{{ url_for('tickets.delete_ticket', ticket_id=ticket.id) }}"
+      onsubmit="return confirm('Permanently delete this ticket?')">
+      {{ status_form.hidden_tag() }}
+      <button class="btn btn-outline-danger"><i class="bi bi-trash"></i> Delete</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+
+<div class="row g-4">
+  <!-- Left: Ticket Info -->
+  <div class="col-lg-8">
+    <!-- Status Update -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-white fw-semibold">
+        <i class="bi bi-arrow-repeat me-1"></i> Update Status
+      </div>
+      <div class="card-body">
+        <form method="POST" action="{{ url_for('tickets.update_status', ticket_id=ticket.id) }}" class="row g-2 align-items-end">
+          {{ status_form.hidden_tag() }}
+          <div class="col-md-4">
+            {{ status_form.status.label(class="form-label fw-semibold small") }}
+            {{ status_form.status(class="form-select") }}
+          </div>
+          <div class="col-md-5">
+            {{ status_form.note.label(class="form-label fw-semibold small") }}
+            {{ status_form.note(class="form-control") }}
+          </div>
+          <div class="col-md-3">
+            {{ status_form.submit(class="btn btn-dark w-100") }}
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Service Details -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-white fw-semibold"><i class="bi bi-wrench me-1"></i> Service Details</div>
+      <div class="card-body">
+        <dl class="row mb-0">
+          <dt class="col-sm-3 text-muted">Service Type</dt>
+          <dd class="col-sm-9">{{ ticket.service_type_label }}</dd>
+
+          <dt class="col-sm-3 text-muted">Description</dt>
+          <dd class="col-sm-9">{{ ticket.description }}</dd>
+
+          {% if ticket.customer_complaint %}
+          <dt class="col-sm-3 text-muted">Customer Complaint</dt>
+          <dd class="col-sm-9 fst-italic">"{{ ticket.customer_complaint }}"</dd>
+          {% endif %}
+
+          <dt class="col-sm-3 text-muted">Status</dt>
+          <dd class="col-sm-9"><span class="badge {{ ticket.status_badge_class }}">{{ ticket.status_label }}</span></dd>
+
+          <dt class="col-sm-3 text-muted">Urgency</dt>
+          <dd class="col-sm-9">{{ ticket.urgency_label }}</dd>
+
+          {% if ticket.mileage_in %}
+          <dt class="col-sm-3 text-muted">Mileage In</dt>
+          <dd class="col-sm-9">{{ "{:,}".format(ticket.mileage_in) }} mi</dd>
+          {% endif %}
+
+          {% if ticket.estimated_hours %}
+          <dt class="col-sm-3 text-muted">Est. Hours</dt>
+          <dd class="col-sm-9">{{ ticket.estimated_hours }}h</dd>
+          {% endif %}
+
+          {% if ticket.promised_time %}
+          <dt class="col-sm-3 text-muted">Promised By</dt>
+          <dd class="col-sm-9">{{ ticket.promised_time.strftime('%A %b %d, %Y %I:%M %p') }}</dd>
+          {% endif %}
+
+          <dt class="col-sm-3 text-muted">Created</dt>
+          <dd class="col-sm-9">
+            {{ ticket.created_at.strftime('%b %d, %Y %I:%M %p') }}
+            {% if ticket.creator %} by {{ ticket.creator.full_name }}{% endif %}
+          </dd>
+
+          {% if ticket.completed_at %}
+          <dt class="col-sm-3 text-muted">Completed</dt>
+          <dd class="col-sm-9">{{ ticket.completed_at.strftime('%b %d, %Y %I:%M %p') }}</dd>
+          {% endif %}
+        </dl>
+      </div>
+    </div>
+
+    <!-- Service Notes -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-white fw-semibold"><i class="bi bi-chat-left-text me-1"></i> Service Notes</div>
+      <div class="card-body">
+        <form method="POST" action="{{ url_for('tickets.add_note', ticket_id=ticket.id) }}" class="mb-4">
+          {{ note_form.hidden_tag() }}
+          <div class="mb-2">
+            {{ note_form.body(class="form-control") }}
+          </div>
+          {{ note_form.submit(class="btn btn-dark btn-sm") }}
+        </form>
+
+        {% set notes = ticket.notes.all() %}
+        {% if notes %}
+          {% for note in notes %}
+          <div class="border-start border-3 border-secondary ps-3 mb-3">
+            <div class="small text-muted mb-1">
+              <strong>{{ note.author.full_name if note.author else 'Staff' }}</strong>
+              · {{ note.created_at.strftime('%b %d, %Y %I:%M %p') }}
+            </div>
+            <div>{{ note.body }}</div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <p class="text-muted small mb-0">No notes yet.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Status History -->
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white fw-semibold"><i class="bi bi-clock-history me-1"></i> Status History</div>
+      <div class="card-body p-0">
+        {% set history = ticket.status_history.all() %}
+        {% if history %}
+          <table class="table table-sm mb-0">
+            <thead class="table-light"><tr><th>Time</th><th>From</th><th>To</th><th>By</th><th>Note</th></tr></thead>
+            <tbody>
+              {% for h in history %}
+              <tr>
+                <td class="small text-muted">{{ h.changed_at.strftime('%b %d %I:%M%p') }}</td>
+                <td class="small text-muted">{{ h.from_status or '—' }}</td>
+                <td class="small fw-semibold">{{ h.to_status }}</td>
+                <td class="small">{{ h.changed_by.full_name if h.changed_by else '—' }}</td>
+                <td class="small text-muted">{{ h.note or '' }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% else %}
+          <div class="text-muted small p-3">No history recorded.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Customer / Vehicle -->
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-white fw-semibold"><i class="bi bi-person me-1"></i> Customer</div>
+      <div class="card-body">
+        {% set customer = ticket.customer %}
+        {% if customer %}
+          <h5 class="mb-1">
+            <a href="{{ url_for('customers.customer_detail', customer_id=customer.id) }}" class="text-decoration-none text-dark">
+              {{ customer.full_name }}
+            </a>
+          </h5>
+          <div class="small text-muted mb-1"><i class="bi bi-telephone me-1"></i>{{ customer.phone }}</div>
+          {% if customer.email %}<div class="small text-muted mb-1"><i class="bi bi-envelope me-1"></i>{{ customer.email }}</div>{% endif %}
+          {% if customer.notes %}<div class="small text-warning mt-2"><i class="bi bi-info-circle me-1"></i>{{ customer.notes }}</div>{% endif %}
+        {% else %}
+          <span class="text-muted">No customer linked.</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-white fw-semibold"><i class="bi bi-car-front me-1"></i> Vehicle</div>
+      <div class="card-body">
+        {% set vehicle = ticket.vehicle %}
+        {% if vehicle %}
+          <h5 class="mb-1">{{ vehicle.display_name }}</h5>
+          {% if vehicle.color %}<div class="small text-muted">Color: {{ vehicle.color }}</div>{% endif %}
+          {% if vehicle.license_plate %}<div class="small text-muted">Plate: <strong>{{ vehicle.license_plate }}</strong></div>{% endif %}
+          {% if vehicle.vin %}<div class="small text-muted">VIN: {{ vehicle.vin }}</div>{% endif %}
+          {% if vehicle.engine %}<div class="small text-muted">Engine: {{ vehicle.engine }}</div>{% endif %}
+          {% if vehicle.transmission %}<div class="small text-muted">Trans: {{ vehicle.transmission | capitalize }}</div>{% endif %}
+          {% if ticket.mileage_in %}<div class="small text-muted">Mileage In: {{ "{:,}".format(ticket.mileage_in) }} mi</div>{% endif %}
+        {% else %}
+          <span class="text-muted">No vehicle linked.</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white fw-semibold"><i class="bi bi-person-gear me-1"></i> Assigned Mechanic</div>
+      <div class="card-body">
+        {% if ticket.mechanic %}
+          <h5 class="mb-1">{{ ticket.mechanic.full_name }}</h5>
+          {% if ticket.mechanic.phone %}<div class="small text-muted">{{ ticket.mechanic.phone }}</div>{% endif %}
+          <a href="{{ url_for('mechanics.mechanic_detail', mechanic_id=ticket.mechanic.id) }}" class="btn btn-sm btn-outline-dark mt-2">View Workload</a>
+        {% else %}
+          <span class="text-muted">Unassigned</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
